@@ -1,5 +1,4 @@
 import time
-import re
 
 def timeit(method):
     def timed(*args, **kw):
@@ -14,8 +13,3 @@ def timeit(method):
         return result
 
     return timed
-
-
-def replace_numbers(list):
-    list = [re.sub(r'[0-9]', '', i) for i in list]
-    return list
