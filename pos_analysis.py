@@ -62,7 +62,7 @@ def total_adjectives(text):
 			adjective_frequency[adj] = 1
 
 	# Adjective with maximum frequency
-	# print(max(adjective_frequency, key=adjective_frequency.get))
+	favorite_adj =max(adjective_frequency, key=adjective_frequency.get)
 
 	# Top 10 adjectives with high frequency. For this, the dictionary is first sorted with respect to value
 	# and reverse=True for sorting in descending order ie adj with highest frequency is at first, then [:10]
@@ -122,7 +122,8 @@ def total_adjectives(text):
 		sum =paragraphs_and_adj_count[key]
 	avg_in_paragraphs = sum/count
 
-	return len(adjectives), adjectives, adjective_frequency, top_ten_adjectives, avg_in_sentences, avg_in_paragraphs
+	return len(adjectives), adjectives, adjective_frequency, top_ten_adjectives, avg_in_sentences\
+		, avg_in_paragraphs, favorite_adj
 
 @timeit
 def total_verbs(text):
@@ -408,8 +409,9 @@ if __name__ == '__main__':
 	create_csv_dictionary("noun_frequency.csv", "Noun Frequencies", "Nouns", "Frequencies", noun_frequency)
 
 
-	adj_count,adj_list, adj_frequency, ten_adj_words, average_per_sentences, average_per_paragraphs = total_adjectives(text_data)
+	adj_count,adj_list, adj_frequency, ten_adj_words, average_per_sentences, average_per_paragraphs, favorite_adjective= total_adjectives(text_data)
 	create_csv("adj_count.csv", "Total number of adjectives", adj_count)
+	create_csv("favorite_adj.csv", "Tolstoy's favorite adjective", favorite_adjective)
 	create_csv("average_per_sentences.csv", "Average number of adjectives per sentences", average_per_sentences)
 	create_csv("average_per_paragraphs.csv", "Average number of adjectives per paragraphs", average_per_paragraphs)
 	create_csv_list("adj_list.csv", "list of adjectives", adj_list)
