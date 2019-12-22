@@ -5,26 +5,25 @@ from spacy.matcher import Matcher
 from utils.util import timeit
 from utils.csv_writer import create_csv, create_csv_list, create_csv_dictionary
 
+
 @timeit
 def clean_text(text):
 	"""Words without stop_words, spaces, punctuations"""
 	# Loading en_core_web_sm model and disabling ner = name entity recognizer, parser
 	# tagger and text categorizer
-	nlp = spacy.load("en_core_web_sm", disable=["ner", "parser", "tagger", "textcat", "..."])
-	nlp.max_length = 10000000
+	nlp.pipe(text, disable=["tokenizer", "tagger", "parser", "ner", "textcat", "..."])
 	doc = nlp(text)
-	text_without_stop_words = [words for words in doc if words.is_stop==False if words.is_punct==False\
-							   if words.is_space==False]
+	text_without_stop_words = [token for token in doc if token.is_stop == False if token.is_punct == False if token.is_space == False]
 	return text_without_stop_words
+
 
 @timeit
 def total_nouns(text):
 	"""Noun words, total no of nouns, nouns frequencies"""
-	nlp = spacy.load("en_core_web_sm", disable=["ner", "parser", "textcat", "..."])
-	nlp.max_length = 3000000
+	nlp.pipe(text, disable=["tokenizer", "tagger", "ner", "parser", "textcat", "..."])
 	doc = nlp(text)
 
-	nouns = [token.string for token in doc if token.pos_=="NOUN"]
+	nouns = [token.string for token in doc if token.pos_ == "NOUN"]
 
 	nouns_frequency = {}
 	for noun in nouns:
@@ -39,10 +38,11 @@ def total_nouns(text):
 	# print(max(nouns_frequency, key=nouns_frequency.get))
 	return len(nouns), nouns, nouns_frequency, top_ten_noun
 
+
 @timeit
 def total_adjectives(text):
 	"""Adjectives, total no of adjectives, adjective frequencies"""
-	nlp = spacy.load("en_core_web_sm", disable=["ner", "textcat"])
+	nlp.pipe(text, disable=["tokenizer", "tagger", "parser", "ner", "textcat", "..."])
 	doc = nlp(text)
 
 	sents = doc.sents
@@ -51,7 +51,8 @@ def total_adjectives(text):
 	paragraphs_and_adj_count = {}
 
 	# Finding the list of adjectives
-	adjectives = [token for token in doc if token.pos_=="ADJ"]
+	adjectives = [token.string for token in doc if token.pos_ == "ADJ"]
+	# print(adjectives)
 
 	# For adjective frequencies in the text
 	adjective_frequency = {}
@@ -62,7 +63,7 @@ def total_adjectives(text):
 			adjective_frequency[adj] = 1
 
 	# Adjective with maximum frequency
-	favorite_adj =max(adjective_frequency, key=adjective_frequency.get)
+	favorite_adj = max(adjective_frequency, key=adjective_frequency.get)
 
 	# Top 10 adjectives with high frequency. For this, the dictionary is first sorted with respect to value
 	# and reverse=True for sorting in descending order ie adj with highest frequency is at first, then [:10]
@@ -74,17 +75,17 @@ def total_adjectives(text):
 	# finding the sentences with adjectives
 	for sent in sents:
 		for token in sent:
-			if token.pos_=="ADJ":
+			if token.pos_ == "ADJ":
 				sentences_with_adj.append(sent)
 				break
 
 	# finding the number of adjectives in sentences from sentences_with_adjectives
 	for sent in sentences_with_adj:
-		adj_count = 0
+		adj_count_in_sentences = 0
 		for token in sent:
-			if token.pos_=="ADJ":
-				adj_count += 1
-		sentences_and_adj_count[sent] = adj_count
+			if token.pos_ == "ADJ":
+				adj_count_in_sentences += 1
+		sentences_and_adj_count[sent] = adj_count_in_sentences
 
 	# counting the average number of adjectives in each sentences
 	count = 0
@@ -112,26 +113,27 @@ def total_adjectives(text):
 	for para in paragraphs_with_adjectives:
 		adj_count_in_para = 0
 		for token in para:
-			if token.pos_=="ADJ":
+			if token.pos_ == "ADJ":
 				adj_count_in_para += 1
 		paragraphs_and_adj_count[para] = adj_count_in_para
 
 	# Counting the average number of adjectives in each paragraphs
 	for key in paragraphs_and_adj_count:
 		count += 1
-		sum =paragraphs_and_adj_count[key]
+		sum = paragraphs_and_adj_count[key]
 	avg_in_paragraphs = sum/count
 
 	return len(adjectives), adjectives, adjective_frequency, top_ten_adjectives, avg_in_sentences\
 		, avg_in_paragraphs, favorite_adj
 
+
 @timeit
 def total_verbs(text):
 	"""Verbs, total no of verbs, verb frequencies"""
-	nlp = spacy.load("en_core_web_sm", disable=["ner", "parser", "textcat", "..."])
+	nlp.pipe(text, disable=["tokenizer", "tagger", "ner", "parser", "textcat", "..."])
 	doc = nlp(text)
 
-	verbs = [token for token in doc if token.pos_=="VERB"]
+	verbs = [token.string for token in doc if token.pos_=="VERB"]
 	verb_frequency = {}
 	for verb in verbs:
 		if verb in verb_frequency:
@@ -144,10 +146,11 @@ def total_verbs(text):
 
 	return len(verbs), verbs, verb_frequency, top_ten_verbs
 
+
 @timeit
 def noun_noun_phrase(text):
 	"""Noun-Noun phrases and their frequencies"""
-	nlp = spacy.load("en_core_web_sm", disable=["ner", "textcat", "..."])
+	nlp.pipe(text, disable=["tokenizer", "tagger", "parser", "ner", "textcat", "..."])
 	doc = nlp(text)
 
 	# noun_chunks is the chunk consists of noun-noun phrase
@@ -165,10 +168,11 @@ def noun_noun_phrase(text):
 
 	return noun_and_noun_phrase, noun_phrase_frequency, favorite_noun_noun_phrase
 
+
 @timeit
 def noun_adj_phrase(text):
 	"""Gives Noun-adjective phrases from the text and their frequencies"""
-	nlp = spacy.load("en_core_web_sm", disable=["ner", "textcat", "..."])
+	nlp.pipe(text, disable=["tokenizer", "tagger", "parser", "ner", "textcat", "..."])
 	matcher = Matcher(nlp.vocab)
 	doc = nlp(text)
 
@@ -190,10 +194,11 @@ def noun_adj_phrase(text):
 
 	return noun_adj_pairs, noun_adj_frequency, favorite_noun_adj_phrase
 
+
 @timeit
 def adj_noun_phrase(text):
 	"""Gives adjective-noun phrases from the text and their frequencies"""
-	nlp = spacy.load("en_core_web_sm", disable=["ner", "textcat", "..."])
+	nlp.pipe(text, disable=["tokenizer", "tagger", "parser", "ner", "textcat", "..."])
 	matcher = Matcher(nlp.vocab)
 	doc = nlp(text)
 
@@ -215,10 +220,11 @@ def adj_noun_phrase(text):
 
 	return adj_noun_pairs, adj_noun_frequency, favorite_adj_noun_phrase
 
+
 @timeit
 def sentences_with_two_or_more_nouns(text):
 	"""Sentences with two or more nouns"""
-	nlp = spacy.load("en_core_web_sm", disable=["ner", "textcat"])
+	nlp.pipe(text, disable=["tokenizer", "tagger", "parser", "ner", "textcat"])
 	matcher = Matcher(nlp.vocab)
 	matched_sentences = []
 
@@ -235,10 +241,11 @@ def sentences_with_two_or_more_nouns(text):
 
 	return matched_sentences
 
+
 @timeit
 def sentences_with_two_or_more_adj(text):
 	"""Sentences with two or more adjectives"""
-	nlp = spacy.load("en_core_web_sm", disable=["ner", "textcat"])
+	nlp.pipe(text, disable=["ner", "textcat"])
 	matcher = Matcher(nlp.vocab)
 	matched_sentences = []
 
@@ -255,10 +262,11 @@ def sentences_with_two_or_more_adj(text):
 
 	return matched_sentences
 
+
 @timeit
 def sentences_with_two_or_more_verbs(text):
 	"""Sentences with two or more verbs"""
-	nlp = spacy.load("en_core_web_sm", disable=["ner", "textcat"])
+	nlp.pipe(text, disable=["tokenizer", "tagger", "parser", "ner", "textcat"])
 	matcher = Matcher(nlp.vocab)
 	matched_sentences = []
 
@@ -275,10 +283,11 @@ def sentences_with_two_or_more_verbs(text):
 
 	return matched_sentences
 
+
 @timeit
 def sentences_without_noun(text):
 	"""Sentences without noun"""
-	nlp = spacy.load("en_core_web_sm", disable=["ner", "textcat"])
+	nlp.pipe(text, disable=["tokenizer", "tagger", "parser", "ner", "textcat"])
 	doc = nlp(text)
 
 	total_sentences = list(doc.sents)
@@ -291,10 +300,11 @@ def sentences_without_noun(text):
 
 	return sentences
 
+
 @timeit
 def sentences_without_adjective(text):
 	"""Sentences without adjectives"""
-	nlp = spacy.load("en_core_web_sm", disable=["ner", "textcat"])
+	nlp.pipe(text, disable=["tokenizer", "tagger", "parser", "ner", "textcat"])
 	doc = nlp(text)
 
 	total_sentences = list(doc.sents)
@@ -307,10 +317,11 @@ def sentences_without_adjective(text):
 
 	return sentences
 
+
 @timeit
 def sentences_without_verbs(text):
 	"""Sentences without verbs"""
-	nlp = spacy.load("en_core_web_sm", disable=["ner", "textcat"])
+	nlp.pipe(text, disable=["tokenizer", "tagger", "parser", "ner", "textcat"])
 	doc = nlp(text)
 
 	total_sentences = list(doc.sents)
@@ -323,12 +334,13 @@ def sentences_without_verbs(text):
 
 	return sentences
 
+
 @timeit
 def favorite(noun, adj, verb):
 	"""Gives the favorite among nouns, adjectives and verbs"""
-	if noun>adj and noun>verb:
+	if noun > adj and noun > verb:
 		result = "Tolstoy favorite among nouns, adjectives and verbs is noun"
-	elif adj>noun and adj>verb:
+	elif adj > noun and adj > verb:
 		result = "Tolstoy favorite among nouns, adjectives and verbs is adjective"
 	else:
 		result = "Tolstoy favorite among nouns, adjectives and verbs is verb"
@@ -339,10 +351,10 @@ def favorite(noun, adj, verb):
 @timeit
 def person_names(text):
 	"""Person names and their frequencies"""
-	nlp = spacy.load("en_core_web_sm", disable=["parser", "textcat", "..."])
+	nlp.pipe(text, disable=["tokenizer", "tagger", "parser", "ner", "textcat", "..."])
 	doc = nlp(text)
 
-	names = [ent.text for ent in doc.ents if ent.label_=="PERSON"]
+	names = [ent.text for ent in doc.ents if ent.label_ == "PERSON"]
 
 	name_frequency = {}
 	for name in names:
@@ -356,19 +368,19 @@ def person_names(text):
 
 	return names, name_frequency, favorite_name
 
+
 @timeit
 def tense(text):
 	"""Total present tense, past tense and future tense sentences"""
-	nlp = spacy.load("en_core_web_sm", disable=["ner", "textcat"])
+	nlp.pipe(text, disable=["tokenizer", "tagger", "parser", "ner", "textcat", "..."])
 	doc = nlp(text)
 	sents = doc.sents
-
 	sentences_with_verbs, present_tense_sentences, past_tense_sentences, future_tense_sentences = [], [], [], []
 
 	# All sentences having verbs
 	for sent in sents:
 		for token in sent:
-			if token.pos_=="VERB":
+			if token.pos_ == "VERB":
 				sentences_with_verbs.append(sent)
 				break
 
@@ -400,16 +412,18 @@ if __name__ == '__main__':
 	stop_words = list(STOP_WORDS)
 	text_data = open("Data/2600-0.txt", "r", encoding="utf-8").read().lower()[:90000]
 
+	nlp = spacy.load("en_core_web_sm")  # loading the model with all pipelines
+	# text_doc = nlp(text_data)
+
 	create_csv_list("clean_text.csv", "Words without stop_words, spaces, punctuations", clean_text(text_data))
 
-	noun_count, noun_list, noun_frequency, ten_noun_words= total_nouns(text_data)
+	noun_count, noun_list, noun_frequency, ten_noun_words = total_nouns(text_data)
 	create_csv("noun_count.csv", "Total number of nouns", noun_count)
 	create_csv_list("noun_list.csv", "list of nouns", noun_list)
 	create_csv_list("top_ten_noun_frequency.csv", "Favorite Ten Nouns", ten_noun_words)
 	create_csv_dictionary("noun_frequency.csv", "Noun Frequencies", "Nouns", "Frequencies", noun_frequency)
 
-
-	adj_count,adj_list, adj_frequency, ten_adj_words, average_per_sentences, average_per_paragraphs, favorite_adjective= total_adjectives(text_data)
+	adj_count, adj_list, adj_frequency, ten_adj_words, average_per_sentences, average_per_paragraphs, favorite_adjective = total_adjectives(text_data)
 	create_csv("adj_count.csv", "Total number of adjectives", adj_count)
 	create_csv("favorite_adj.csv", "Tolstoy's favorite adjective", favorite_adjective)
 	create_csv("average_per_sentences.csv", "Average number of adjectives per sentences", average_per_sentences)
